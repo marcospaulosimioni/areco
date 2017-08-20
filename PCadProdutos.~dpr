@@ -1,0 +1,14 @@
+program PCadProdutos;
+
+uses
+  Forms,
+  CadProdutos in 'CadProdutos.pas' {FormCadProdutos},
+  uConexaoBanco in 'uConexaoBanco.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TFormCadProdutos, FormCadProdutos);
+  Application.Run;
+end.

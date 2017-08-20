@@ -1,0 +1,100 @@
+unit uConexaoBanco;
+
+interface
+
+uses
+
+SqlExpr, inifiles, SysUtils, Forms;
+//SqlExpr, inifiles, SysUtils, Forms, uGFunctions;
+
+type
+
+   TConexaoBanco = class
+
+      private
+
+       FConexaoBanco : TSQLConnection;
+
+      public
+
+       constructor Create;
+       destructor  Destroy; override;
+       function GetConexao : TSQLConnection;
+       property ConexaoBanco : TSQLConnection   read GetConexao;
+
+   end;
+
+implementation
+
+constructor TConexaoBanco.Create;
+
+var
+
+  ArquivoINI, Servidor, Caminho, DriverName, UserName, PassWord : string;
+  LocalServer : Integer;
+  Configuracoes : TIniFile;
+
+begin
+
+   ArquivoINI := ExtractFilePath(Application.ExeName) + '\config.ini';
+
+   if not FileExists(ArquivoINI) then
+
+    begin
+     //Erro('Arquivo de Config não Encontrado - Entre em contato como suporte técnico!');
+     Exit;
+    end;
+
+   // Carregando as informações do arquivo de configurações
+
+   Configuracoes := TIniFile.Create(ArquivoINI);
+
+   Try
+
+     Servidor   := Configuracoes.ReadString('Dados', 'Servidor',   Servidor);
+     Caminho    := Configuracoes.ReadString('Dados', 'DataBase',   Caminho);
+     DriverName := Configuracoes.ReadString('Dados', 'DriverName', DriverName);
+     UserName   := Configuracoes.ReadString('Dados', 'UserName',   UserName);
+     PassWord   := Configuracoes.ReadString('Dados', 'PassWord',   PassWord);
+
+   Finally
+     Configuracoes.Free;
+   end;
+
+   try
+
+     FConexaoBanco := TSQLConnection.Create(Application);
+     FConexaoBanco.ConnectionName := 'FBConnection';
+     FConexaoBanco.DriverName     := 'Access';
+     FConexaoBanco.LibraryName    := 'dbexpodbc.dll';
+     FConexaoBanco.GetDriverFunc  := 'getSQLDriverODBC';
+     FConexaoBanco.LoginPrompt    := False;
+
+     FConexaoBanco.Connected  := False;
+     FConexaoBanco.Params.Values['DataBase']   := Servidor + ':' + Caminho;
+     FConexaoBanco.Params.Values['User_Name']  := UserName;
+     FConexaoBanco.Params.Values['Password']   := PassWord;
+     FConexaoBanco.Connected  := True;
+
+   except
+     //Erro('Erro ao Conectar o Banco de dados. Verifique as preferencias do sistema!');
+   end;
+
+end;
+
+destructor TConexaoBanco.Destroy;
+
+begin
+
+  FConexaoBanco.Free;
+  inherited;
+end;
+
+function TConexaoBanco.GetConexao: TSQLConnection;
+
+begin
+   Result := FConexaoBanco;
+end;
+
+end.
+ 
